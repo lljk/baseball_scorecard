@@ -4,7 +4,7 @@ Hey there -
 
   If you care about baseball half as much as I do, this might be interesting to you - if not, well I'm sorry...
 
-  Assuming you do give a rat's behind about baseball, odds are you've scored a game or two...  I've been living abroad for a good long while - and the truth is that folks where I am are clueless about baseball... their loss.  Anyway, here's an app I worked out with green Shoes and timothyf's gameday_api to generate scorecards so I can check out the games the next day in a way that's sensible (to me at least...) even if i can't actually talk to anyone about it ;)
+  Assuming you do give a rat's behind about baseball, odds are you've scored a game or two...  I've been living abroad for a good long while - and the truth is that folks where I am are clueless about baseball... their loss.  Anyway, here's an app I worked out with green Shoes and timothyf's gameday_api to generate html scorecards so I can check out the games the next day in a way that's sensible (to me at least...) even if i can't actually talk to anyone about it ;)
 
 INSTALL:
 
