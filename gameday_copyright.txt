@@ -1,0 +1,6 @@
+
+All documents fetched by the gameday API clearly state: Copyright 2012 MLB Advanced Media, L.P. Use of any content on this page acknowledges agreement to the terms posted here gdx.mlb.com/components/copyright.txt
+
+Which furthermore states: The accounts, descriptions, data and presentation in the referring page (the “Materials”) are proprietary content of MLB Advanced Media, L.P (“MLBAM”).<br />Only individual, non-commercial, non-bulk use of the Materials is permitted and any other use of the Materials is prohibited without prior written authorization from MLBAM.<br />Authorized users of the Materials are prohibited from using the Materials in any commercial manner other than as expressly authorized by MLBAM.
+
+Naturally, these terms are passed on to any who use this application. It is your responsibility to abide by them.
