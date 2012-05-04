@@ -57,3 +57,5 @@ scorecard
   Go Sox!!!
 
   - j
+
+  *** PLEASE READ THE 'gameday_copyright.txt' FILE
