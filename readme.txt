@@ -4,7 +4,7 @@ Hey there -
 
   If you care about baseball half as much as I do, this might be interesting to you - if not, well I'm sorry...
 
-  Assuming you do give a rat's behind about baseball, odds are you've scored a game or two...  I've been living abroad for a good long while - and the truth is that folks where I am are clueless about baseball... their loss.  Anyway, here's an app I worked out to generate scorecards so I can check out the games the next day in a way that's sensible (to me at least...) even if i can't actually talk to anyone about it ;)
+  Assuming you do give a rat's behind about baseball, odds are you've scored a game or two...  I've been living abroad for a good long while - and the truth is that folks where I am are clueless about baseball... their loss.  Anyway, here's an app I worked out with green Shoes and timothyf's gameday_api to generate scorecards so I can check out the games the next day in a way that's sensible (to me at least...) even if i can't actually talk to anyone about it ;)
 
 INSTALL:
 
@@ -46,6 +46,8 @@ scorecard
   If a batter had more than one at bat in an inning, '+AB' is shown below the at bat result.
 
   Hovering over a particular at bat cell will show the description of the at bat.  Hovering over a batter will show their season and career stats.
+
+  I've noticed that this works best for recent games, as not all of the data necessary to generate the scorecards is available for older games - for example, I tried creating cards for the 2004 ALCS game 7 for the screenshot (being a Red Sox fan,) and it didn't work :(  - Had to go back a couple of weeks to find a game that we won instead!
 
   So i guess that's about it...  I've still got some work to do on the thing, but hopefully it'll mostly work!
 

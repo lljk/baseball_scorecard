@@ -4,9 +4,7 @@ require 'gameday'
 require 'team'
 require 'batter'
 require 'launchy'
-
-require "./baseball_scorecard/card_generator.rb"
-require "./baseball_scorecard/version.rb"
+require File.join(File.dirname(__FILE__), "baseball_scorecard", "card_generator")
 
 module BaseballScorecard
 
@@ -14,7 +12,7 @@ module BaseballScorecard
 	
 		Shoes::App.class_eval{include CardGenerator}
 	
-		background(image "baseball_scorecard/images/baseball.png")
+		background(image "#{File.join(File.dirname(__FILE__), "baseball_scorecard", "images", "baseball.png")}")
 	
 		teams = Team.teams
 		team_list = ["Select Team"]

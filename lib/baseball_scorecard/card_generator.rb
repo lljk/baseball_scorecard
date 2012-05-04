@@ -9,7 +9,8 @@ module CardGenerator
 	
 	def init_cards(game)
 		@@parent = self
-		@imagedir = "images"
+		#@imagedir = "images"
+		@imagedir = File.join(File.dirname(__FILE__), "images")
 		Thread.new{init_batting_arrays(game)}
 	end
 	
@@ -355,14 +356,13 @@ module CardGenerator
 			end		#body	
 		end		#html_builder
 		
-		File.open("baseball_scorecard/scorecard_#{home_or_away}.html", "w"){|f|
+		File.open("scorecard_#{home_or_away}.html", "w"){|f|
 			f.puts(html_builder.to_s)
 		}
 		
 		@status_line.text = "html built"
 		p "html built"##
-		Launchy.open("baseball_scorecard/scorecard_#{home_or_away}.html")
-		
+		Launchy.open("scorecard_#{home_or_away}.html")
 	end		#init_html
 	
 end		#module CardGenerator
