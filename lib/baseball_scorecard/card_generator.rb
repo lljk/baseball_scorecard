@@ -1,3 +1,6 @@
+#  2012  J. Kaiden
+#  please see the gameday_copyright.txt file
+
 class Array		#makes green_shoes play nice with gameday_api ;)
   def clear; _clear end
 end

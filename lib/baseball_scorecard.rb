@@ -1,3 +1,6 @@
+#  2012  J. Kaiden
+#  please see the gameday_copyright.txt file
+
 require 'markaby'
 require 'green_shoes'
 require 'gameday'
