@@ -10,11 +10,13 @@ INSTALL:
 
 gem install 'baseball_scorecard'
 
-RUN:
+RUN (in terminal):
 
 scorecard
 
-  Select a team and date, and click 'find games.'  If games for the given team and date are found, a box where you can select the game time (if there's a double header that day,) and a 'build scorecards' button will appear.  Click 'build scorecards,' and give the thing a little while to cook....  it's got a bunch of data to get and crunch!
+  Installation of the gem might take a while - it's dependent on a few other gems that may need to be installed as well.  Once the thing is installed, type `scorecard` into your terminal or command line or whatever, press return or enter or whatever, and away you go!
+
+  Select a team and date from the window that pops up, and click 'find games.'  If games for the given team and date are found, a box where you can select the game time (if there's a double header that day,) and a 'build scorecards' button will appear.  Click 'build scorecards,' and give the thing a little while to cook....  it's got a bunch of data to get and crunch!
 
   Everyone scores games a little differently, so here are some notes about my notation:
 
