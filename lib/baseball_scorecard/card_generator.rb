@@ -6,14 +6,9 @@ class Array		#makes green_shoes play nice with gameday_api ;)
 end
 
 module CardGenerator
-	attr_accessor :home_team, :visiting_team, :home_batters, :visiting_batters,
-	:home_pitchers, :visiting_pitchers, :visiting_abrev, :home_abrev,
-	:visiting_score, :home_score, :date, :elements, :fldg, :imagedir
 	
 	def init_cards(game)
-		@@parent = self
-		#@imagedir = "images"
-		@imagedir = File.join(File.dirname(__FILE__), "images")
+		@imagedir = "file:///#{File.join(File.dirname(__FILE__), "images")}"
 		Thread.new{init_batting_arrays(game)}
 	end
 	
@@ -255,117 +250,155 @@ module CardGenerator
 	end
 	
 	def init_html(home_or_away)
-		@status_line.text = "building html"
-		p "building html"###
-		
-		html_builder = Markaby::Builder.new
-		html_builder.html do
-			imagedir = @@parent.imagedir
-			case home_or_away
-				when 'home'
-				batters = @@parent.home_batters; pitchers = @@parent.home_pitchers; team_abrev = @@parent.home_abrev
-				when 'away'
-				batters = @@parent.visiting_batters; pitchers = @@parent.visiting_pitchers; team_abrev = @@parent.visiting_abrev
-			end
-			
-			head {title "#{team_abrev} Scorecard"}
-			body :style => "background-image: url(#{File.join(imagedir, 'grass.jpg')})" do
+	@status_line.text = "building html"
+	p "writing html"###
+	
+	case home_or_away
+		when 'home'
+		batters = @home_batters; pitchers = @home_pitchers; team_abrev = @home_abrev
+		when 'away'
+		batters = @visiting_batters; pitchers = @visiting_pitchers; team_abrev = @visiting_abrev
+	end
+	
+	File.open("scorecard_#{home_or_away}.html", "w"){|f|
+	
+		f.puts "<html>"
+			f.puts "<head title=\"#{team_abrev} Scorecard\"></head>"
+			f.puts "<body style=\"background-image: url(#{File.join(@imagedir, 'grass.jpg')})\">"
 				
-				h1 :style => "padding-top: 5"
-				pre "#{@@parent.visiting_team} #{@@parent.visiting_score} - #{@@parent.home_team} #{@@parent.home_score}", :style => "color: white; font-family: arial; text-align: center"
-				h2 
-				pre @@parent.date, :style => "color: white; font-family: arial; text-align: center"
-				img :src => File.join(imagedir, "team_images", "#{team_abrev.downcase}.png"),
-				:style => "position: absolute; left: 20; top: 85"
+				f.puts "<h1 style=\"padding-top: 5\">"
+					f.puts "<pre style=\"color: white; font-family: arial; text-align: center\">"
+						f.puts "#{@visiting_team} #{@visiting_score} - #{@home_team} #{@home_score}"
+					f.puts "</pre>"
+				f.puts "</h1>"
 				
-				table do 
-					
-					tr
-					td; inning_num = 1
-					9.times{
-						td inning_num, :style => "color: white; font-family: arial; font-size: 125%; text-align: center"
+				f.puts "<h2>"
+					f.puts "<pre style=\"color: white; font-family: arial; text-align: center\">"
+						f.puts @date
+					f.puts "</pre>"
+					f.puts "<img src=\"#{File.join(@imagedir, 'team_images', "#{team_abrev.downcase}.png")}\" style=\"position: absolute; left: 20; top:85\">"
+				f.puts "</h2>"
+				
+				f.puts "<table>"
+				
+					f.puts "<tr>"
+					f.puts "<td></td>"
+					inning_num = 1
+					@game.innings.length.times{
+						f.puts "<td style=\"color: white; font-family: arial; font-size: 125%; text-align: center\">"
+							f.puts inning_num
+						f.puts "</td>"
 						inning_num += 1
 					}
+					f.puts "</tr>"
 					
-					batters.each_with_index{|batter, batter_index|
+				batters.each_with_index{|batter, batter_index|
 						unless batter.batting_order == 0
-							tr
-							td :width => 150, :title => batter.stats
-							pre "#{batter.batting_order}\n#{batter.name}\n##{batter.number} #{batter.position}",
-							:style => "color: white; font-family: arial; font-size: 125%; text-align: right; padding-right: 20"
+							f.puts "<tr>"
 							
-							batter.innings.each_with_index{|inning, inning_index|
-								if inning.empty?
-									td 
-									img :src => File.join(imagedir, "bases_no_ba.png"), :style => "position: relative; top: 0; left: 0"
-								else
-									atbat = batter.innings[inning_index][-1]
-									@@parent.get_elements(home_or_away, batter_index, inning_index)
-									description = ""#
-									if batter.innings[inning_index].length > 1#
-										batter.innings[inning_index].each_with_index{|ab, ab_index|#
-											description << "At Bat #{ab_index + 1}: #{ab.des}\n"#
-										}#
+								f.puts "<td style=\"width: 150\" title=\"#{batter.stats}\">"
+									f.puts "<pre style=\"color: white; font-family: arial; font-size: 125%; text-align: right; padding-right: 20\">"
+										f.puts "#{batter.batting_order}\n#{batter.name}\n##{batter.number} #{batter.position}"
+									f.puts "</pre>"
+								f.puts "</td>"
+								
+								batter.innings.each_with_index{|inning, inning_index|
+									if inning.empty?
+										f.puts "<td>"
+										f.puts "<img src=\"#{File.join(@imagedir, 'bases_no_ba.png')}\" style=\"position: relative; top: 0; left: 0\"></img>"
+										f.puts "</td>"
 									else
-										description = atbat.des
-									end
-									td :style => "position: relative; top: 0; left: 0", :title => description
-									img :src => File.join(imagedir, "bases_bg.png"), :style => "position: absolute; top: 0; left: 0"
-									img :src => @@parent.elements[1], :style => "position: absolute; top: 0; left: 0" if @@parent.elements[1]
-									img :src => @@parent.elements[0], :style => "position: absolute; top: 0; left: 0"
-									img :src => @@parent.elements[2], :style => "position: absolute; top: 69; left: 69" if @@parent.elements[2]
-									pre "#{atbat.b}-#{atbat.s}",
-									:style => "position: absolute; top: -7; left: 7; font-family: arial; font-size: small"
-									pre @@parent.fldg,
-									:style => "position: absolute; top: 60; left: 7; font-family: arial; font-size: small" if @@parent.fldg
-									pre "#{@@parent.elements[4]}",
-									:style => "position: absolute; top: -7; left: 65; font-family: arial; font-size: small" if @@parent.elements[4]
-									pre "RBI",
-									:style => "position: absolute; top: -1; left: 72; font-family: arial; font-size: x-small" if @@parent.elements[4]
-									if batter.innings[inning_index].length > 1
-										pre "+AB", :style => "position: absolute; top: 43; left: 33; font-family: arial; font-weight: bold; font-size: small"
-									end
-									if atbat.des.include?('steals')
-										pre "SB", :style => "position: absolute; top: 6; left: 37; font-family: arial; font-weight: bold"
-									end
-								end		#if inning.empty?
-							}		#batter.innings.each_with_index
+										atbat = batter.innings[inning_index][-1]
+										get_elements(home_or_away, batter_index, inning_index)
+										description = ""#
+										if batter.innings[inning_index].length > 1#
+											batter.innings[inning_index].each_with_index{|ab, ab_index|#
+												description << "At Bat #{ab_index + 1}: #{ab.des}\n"#
+											}#
+										else
+											description = atbat.des
+										end
+										f.puts "<td style=\"position: relative; top: 0; left: 0\" title=\"#{description}\">"
+											f.puts "<img src=\"#{File.join(@imagedir, 'bases_bg.png')}\" style=\"position: absolute; top: 0; left: 0\"></img>"
+											f.puts "<img src= #{@elements[1]} style=\"position: absolute; top: 0; left: 0\"></img>" if @elements[1]
+											f.puts "<img src= #{@elements[0]} style=\"position: absolute; top: 0; left: 0\"></img>"
+											f.puts "<img src= #{@elements[2]} style=\"position: absolute; top: 69; left: 69\"></img>" if @elements[2]
+											f.puts "<pre style=\"position: absolute; top: -7; left: 7; font-family: arial; font-size: small\">"
+												f.puts "#{atbat.b}-#{atbat.s}"
+											f.puts "</pre>"
+											if @fldg
+												f.puts "<pre style=\"position: absolute; top: 60; left: 7; font-family: arial; font-size: small\">"
+													f.puts @fldg
+												f.puts "</pre>"
+											end
+											if @elements[4]
+												f.puts "<pre style=\"position: absolute; top: -7; left: 65; font-family: arial; font-size: small\">"
+													f.puts @elements[4]
+												f.puts "</pre>"
+												f.puts "<pre style=\"position: absolute; top: -1; left: 72; font-family: arial; font-size: x-small\">"
+													f.puts "RBI"
+												f.puts "</pre>"
+											end
+											if batter.innings[inning_index].length > 1
+												f.puts "<pre style=\"position: absolute; top: 6; left: 32; font-family: arial; font-weight: bold\">"
+													f.puts "+AB"
+												f.puts "</pre>"
+											end
+											if atbat.des.include?('steals')
+												f.puts "<pre style=\"position: absolute; top: 6; left: 37; font-family: arial; font-weight: bold\">"
+													f.puts "SB"
+												f.puts "</pre>"
+											end
+											
+										f.puts "</td>"
+									end		#if inning.empty?
+								}		#batter.innings.each_with_index
+							f.puts "</tr>"
 						end		#unless
 					}		#batters.each_with_index
-				end		#table
+					
+				f.puts "</table>"
 				
-				hr :style => "padding-top: 10"##
-				h2 "Pitching", :style => "color: white; font-family: arial; text-align: center"
-				table do
-					tr
-					td; %w[W-L ERA IP AB K BB H R ER].each{|entry|
-						td entry, :width => 150, :style => "color: white; font-family: arial; font-size: 125%; text-align: center"
-					}
+				f.puts "<hr style=\"padding-top: 10\"></hr>"
+				f.puts "<h2 style=\"color: white; font-family: arial; text-align: center\">Pitching</h2>"
+				
+				f.puts "<table>"
+				
+					f.puts "<tr>"
+						f.puts "<td></td>"
+						%w[W-L ERA IP AB K BB H R ER].each{|entry|
+							f.puts "<td style=\"width: 150; color: white; font-family: arial; font-size: 125%; text-align: center\">"
+								f.puts entry
+							f.puts "</td>"
+						}
+					f.puts "</tr>"
+					
 					pitchers.each{|pitcher|
-						tr :style => "color: white; font-family: arial"
-						td pitcher.pitcher_name, :style => "font-size: 125%; text-align: right; padding-right: 20"
-						td "#{pitcher.w}-#{pitcher.l}", :width => 150, :style => "text-align: center"
-						td pitcher.era, :width => 150, :style => "text-align: center"
-						td pitcher.inn, :width => 150, :style => "text-align: center"
-						td pitcher.bf, :width => 150, :style => "text-align: center"
-						td pitcher.so, :width => 150, :style => "text-align: center"
-						td pitcher.bb, :width => 150, :style => "text-align: center"
-						td pitcher.h, :width => 150, :style => "text-align: center"
-						td pitcher.r, :width => 150, :style => "text-align: center"
-						td pitcher.er, :width => 150, :style => "text-align: center"
-					}		#pitchers.each
-				end		#table
+						f.puts "<tr style=\"color: white; font-family: arial\">"
+							f.puts "<td style=\"font-size: 125%; text-align: right; padding-right: 20\">"
+								f.puts pitcher.pitcher_name
+							f.puts "</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.w}-#{pitcher.l}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.era}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.inn}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.bf}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.so}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.bb}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.h}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.r}</td>"
+							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.er}</td>"
+						f.puts "</tr>"
+					}
+				f.puts "</table>"
 				
-			end		#body	
-		end		#html_builder
+			f.puts "</body>"
+		f.puts "</html>"
 		
-		File.open("scorecard_#{home_or_away}.html", "w"){|f|
-			f.puts(html_builder.to_s)
-		}
-		
-		@status_line.text = "html built"
-		p "html built"##
-		Launchy.open("scorecard_#{home_or_away}.html")
-	end		#init_html
+	}	#close file
+	
+	@status_line.text = "html built"
+	p "html built"##
+	Launchy.open("./scorecard_#{home_or_away}.html")
+end		#init_html()
 	
 end		#module CardGenerator

@@ -22,9 +22,9 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   # s.add_development_dependency "rspec"
   # s.add_runtime_dependency "rest-client"
-  s.add_dependency "markaby"
-  s.add_dependency "hpricot"
-  s.add_dependency "green_shoes"
-  s.add_dependency "gameday_api"
-  s.add_dependency "launchy"
+  
+  s.add_runtime_dependency "green_shoes"
+  s.add_runtime_dependency "hpricot"
+  s.add_runtime_dependency "gameday_api"
+  s.add_runtime_dependency "launchy"
 end
