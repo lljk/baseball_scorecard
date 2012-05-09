@@ -51,7 +51,7 @@ scorecard
 
   I've noticed that this works best for recent games, as not all of the data necessary to generate the scorecards is available for older games - for example, I tried creating cards for the 2004 ALCS game 7 for the screenshot (being a Red Sox fan,) and it didn't work :(  - Had to go back a couple of weeks to find a game that we won instead!
 
-  So i guess that's about it...  I've still got some work to do on the thing, but hopefully it'll mostly work!
+  So I guess that's about it...  I've still got some work to do on the thing, but hopefully it'll mostly work!
 
   Go Shoes...
   Go Sox!!!
