@@ -8,7 +8,7 @@ Hey there -
 
 INSTALL:
 
-gem install 'baseball_scorecard'
+gem install baseball_scorecard
 
 RUN (in terminal):
 
