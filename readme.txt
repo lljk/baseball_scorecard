@@ -8,6 +8,8 @@ Hey there -
 
 INSTALL:
 
+**  note **  for version 0.0.3 I've removed the `hpricot` runtime dependency from the gemspec, as it was causing install problems with some Windows versions - if you don't already have the hpricot gem installed, make sure to install it first (gem install hpricot) and then...
+
 gem install baseball_scorecard
 
 RUN (in terminal):
@@ -33,19 +35,24 @@ scorecard
   BB - Walk
   IBB - Intentional Walk
   HBP - Hit by Pitch
+  GR - Ground Rule
   K - Strikeout Swinging
-  (backwards)K - Strikeout Looking
+  KC - Strikeout Looking (Called)
   F - Fly Out
   P - Pop Out
   L - Line Out
   G - Ground Out
-  FC - Force Out / Fielder's Choice
+  FO - Force Out
+  FC - Fielder's Choice
   DP - Double Play
   TP - Triple Play
   SB - Stolen Base
+  SAC - Sacrifice Play
   E - Error
 
   If a batter had more than one at bat in an inning, '+AB' is shown below the at bat result.
+
+  Take a look at the `atbat_example.png` file for more info.
 
   Hovering over a particular at bat cell will show the description of the at bat.  Hovering over a batter will show their season and career stats.
 

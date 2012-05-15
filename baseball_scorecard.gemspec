@@ -17,7 +17,6 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   
   s.add_runtime_dependency "green_shoes"
-  s.add_runtime_dependency "hpricot"
   s.add_runtime_dependency "gameday_api"
   s.add_runtime_dependency "launchy"
 end
