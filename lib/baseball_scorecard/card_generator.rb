@@ -8,7 +8,7 @@ end
 module CardGenerator
 	
 	def init_cards(game)
-		@imagedir = "file:///#{File.join(File.dirname(__FILE__), "images")}"
+		@image_dir = File.join(File.expand_path(File.dirname(__FILE__)), "images")
 		Thread.new{init_batting_arrays(game)}
 	end
 	
@@ -157,78 +157,69 @@ module CardGenerator
 		else
 			bases << atbat.pitches[0].on_1b << atbat.pitches[0].on_2b << atbat.pitches[0].on_3b
 		end
-		bases_file = File.join(@imagedir, "bases")
+		bases_file = File.join(@image_dir, 'bases')
 		bases.each_with_index{|b, i|
 			if b
 				bases_file << "-#{(i+1).to_s}"
 			end
 		}
-		bases_file += ".png"
+		bases_file << '.png'
 		@elements << bases_file	#[0]
-		
+
+		event_image = nil
 		case atbat.event
 			when "Single"
-				event_image = File.join(@imagedir, "hit_1B.png")
+				note = "1B"; event_image = File.join(@image_dir, 'hit_1B.png')
 				get_fldg(atbat.des)
 			when "Double"
-				event_image = File.join(@imagedir,  "hit_2B.png")
+				note = "2B"; event_image = File.join(@image_dir, 'hit_2B.png')
 				get_fldg(atbat.des)
 			when "Triple"
-				event_image = File.join(@imagedir,  "hit_3B.png")
+				note = "3B"; event_image = File.join(@image_dir, 'hit_3B.png')
 				get_fldg(atbat.des)
 			when "Home Run"
-				event_image = File.join(@imagedir,  "hit_HR.png")
+				note = "HR"; event_image = File.join(@image_dir, 'hit_HR.png')
 				get_fldg(atbat.des)
-			when "Walk"
-				event_image = File.join(@imagedir,  "hit_BB.png")
-			when "Intent Walk"
-				event_image = File.join(@imagedir, "hit_IBB.png")
-			when "Hit By Pitch"
-				event_image = File.join(@imagedir,  "hit_HBP.png")
+			when "Walk"; note = "BB"
+			when "Intent Walk"; note = "IBB"
+			when "Hit By Pitch"; note = "HBP"
 			when "Strikeout"
 				if atbat.des.include?("called")
-					event_image = File.join(@imagedir,  "out_called.png")
+					note = "KC"
 				else
-					event_image = File.join(@imagedir,  "out_strikes.png")
+					note = "K"
 				end
-			when "Flyout"
-				event_image = File.join(@imagedir,  "out_fly.png")
-				get_fldg(atbat.des)
-			when "Groundout"
-				event_image = File.join(@imagedir,  "out_ground.png")
-				get_fldg(atbat.des)
-			when "Pop Out"
-				event_image = File.join(@imagedir,  "out_pop.png")
-				get_fldg(atbat.des)
-			when "Lineout"
-				event_image = File.join(@imagedir,  "out_line.png")
-				get_fldg(atbat.des)
-			when "Forceout"
-				event_image = File.join(@imagedir,  "out_force.png")
-				get_fldg(atbat.des)
-			when "Field Error"
-				event_image = File.join(@imagedir, "error.png")
-				get_fldg(atbat.des)
+			when "Flyout"; note = "F"; get_fldg(atbat.des)
+			when "Groundout"; note = "G"; get_fldg(atbat.des)
+			when "Pop Out"; note = "P"; get_fldg(atbat.des)
+			when "Lineout"; note = "L"; get_fldg(atbat.des)
+			when "Forceout"; note = "FO"; get_fldg(atbat.des)
+			when "Field Error"; note = "E"; get_fldg(atbat.des)
 		end		#case
-		if atbat.event.include?("DP")
-			event_image = File.join(@imagedir,  "out_double-play.png")
-			get_fldg(atbat.des)
+		if atbat.event.include?("DP") || atbat.des.include?("double play")
+			note = "DP"; get_fldg(atbat.des)
 		end
-		if atbat.event.include?("TP")
-			event_image = File.join(@imagedir,  "out_triple-play.png")
-			get_fldg(atbat.des)
+		if atbat.event.include?("TP") || atbat.des.include?("triple play")
+			note = "TP"; get_fldg(atbat.des)
+		end
+		if atbat.des.include?("sacrifice")
+			note = "SAC"; get_fldg(atbat.des)
+		end
+		if atbat.des.include?("fielder's choice")
+			note = "FC"; get_fldg(atbat.des)
+		end
+		if atbat.des.include?("ground-rule")
+			note = "GR"; get_fldg(atbat.des)
 		end
 		
-		@elements << event_image #[1]
+		@elements << note #[1]
+		@elements << event_image #[2]
 		
-		outs_image = nil
+		outs = nil
 		unless atbat.o == "0" || atbat.o == last_atbat.o
-			outsfile = "outs_#{atbat.o}.png"
-			outs_image = File.join(@imagedir, outsfile)
+			outs = atbat.o
 		end
-		@elements << outs_image #[2]
-		
-		@elements.insert(3, @fldg) if @fldg  #[3]
+		@elements << outs #[3]
 		
 		rbi = atbat.des.scan(/scores/).length
 		@elements.insert(4, rbi) unless rbi == 0  #[4]
@@ -249,156 +240,142 @@ module CardGenerator
 		@fldg = fldg.compact.join("-")
 	end
 	
+
 	def init_html(home_or_away)
-	@status_line.text = "building html"
-	p "writing html"###
-	
-	case home_or_away
-		when 'home'
-		batters = @home_batters; pitchers = @home_pitchers; team_abrev = @home_abrev
-		when 'away'
-		batters = @visiting_batters; pitchers = @visiting_pitchers; team_abrev = @visiting_abrev
-	end
-	
-	File.open("scorecard_#{home_or_away}.html", "w"){|f|
-	
-		f.puts "<html>"
-			f.puts "<head title=\"#{team_abrev} Scorecard\"></head>"
-			f.puts "<body style=\"background-image: url(#{File.join(@imagedir, 'grass.jpg')})\">"
+		@status_line.text = "building html"
+		p "writing html"###
+		
+		case home_or_away
+			when 'home'
+			batters = @home_batters; pitchers = @home_pitchers; team_abrev = @home_abrev
+			when 'away'
+			batters = @visiting_batters; pitchers = @visiting_pitchers; team_abrev = @visiting_abrev
+		end
+		
+		File.open("scorecard_#{home_or_away}.html", "w"){|f|
+			
+			f.puts '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+			"http://www.w3.org/TR/html4/loose.dtd">'
+			f.puts "<html>"
+				f.puts "<head>"
+					f.puts "<meta content=\"text/html; charset=ISO-8859-1\" http-equiv=\"content-type\">"
+					f.puts "<title>\"#{team_abrev} Scorecard\"</title>"
+				f.puts "</head>"
 				
-				f.puts "<h1 style=\"padding-top: 5\">"
-					f.puts "<pre style=\"color: white; font-family: arial; text-align: center\">"
-						f.puts "#{@visiting_team} #{@visiting_score} - #{@home_team} #{@home_score}"
-					f.puts "</pre>"
-				f.puts "</h1>"
-				
-				f.puts "<h2>"
-					f.puts "<pre style=\"color: white; font-family: arial; text-align: center\">"
-						f.puts @date
-					f.puts "</pre>"
-					f.puts "<img src=\"#{File.join(@imagedir, 'team_images', "#{team_abrev.downcase}.png")}\" style=\"position: absolute; left: 20; top:85\">"
-				f.puts "</h2>"
-				
-				f.puts "<table>"
-				
-					f.puts "<tr>"
-					f.puts "<td></td>"
-					inning_num = 1
-					@game.innings.length.times{
-						f.puts "<td style=\"color: white; font-family: arial; font-size: 125%; text-align: center\">"
-							f.puts inning_num
-						f.puts "</td>"
-						inning_num += 1
-					}
-					f.puts "</tr>"
+				bg_img = File.join(@image_dir, 'grass.jpg')
+				f.puts "<body style=\"background-image: url('file://#{bg_img}')\">"
+					f.puts "<h1 style=\"text-align: center; color: white; font-family: Arial\">"
+						f.puts "<big>#{@visiting_team} #{@visiting_score} - #{@home_team} #{@home_score}</big>"
+					f.puts "</h1>"
 					
-				batters.each_with_index{|batter, batter_index|
-						unless batter.batting_order == 0
+					f.puts "<h2 style=\"text-align: center; color: white; font-family: Arial;\">"
+							f.puts "<big>#{@date}</big>"
+					f.puts "</h2>"#
+					
+					f.puts "<img src=\"#{File.join(@image_dir, "team_images", "#{team_abrev.downcase}.png")}\" style=\"position: relative; top: -60px; left: 10px;\">"
+	
+					f.puts "<table style=\"position: relative; top: -55px; text-align: left; width: 100px;\" cellpadding=\"2\" cellspacing=\"2\">"
+						f.puts "<tbody>"
+						
 							f.puts "<tr>"
-							
-								f.puts "<td style=\"width: 150\" title=\"#{batter.stats}\">"
-									f.puts "<pre style=\"color: white; font-family: arial; font-size: 125%; text-align: right; padding-right: 20\">"
-										f.puts "#{batter.batting_order}\n#{batter.name}\n##{batter.number} #{batter.position}"
-									f.puts "</pre>"
+							f.puts "<td></td>"
+							inning_num = 1
+							@game.innings.length.times{
+								f.puts "<td style=\"vertical-align: top; font-family: Arial; color: white; text-align: center; width: 75px; font-weight: bold;\">"
+									f.puts "<big>#{inning_num}</big>"
 								f.puts "</td>"
-								
-								batter.innings.each_with_index{|inning, inning_index|
-									if inning.empty?
-										f.puts "<td>"
-										f.puts "<img src=\"#{File.join(@imagedir, 'bases_no_ba.png')}\" style=\"position: relative; top: 0; left: 0\"></img>"
-										f.puts "</td>"
-									else
-										atbat = batter.innings[inning_index][-1]
-										get_elements(home_or_away, batter_index, inning_index)
-										description = ""#
-										if batter.innings[inning_index].length > 1#
-											batter.innings[inning_index].each_with_index{|ab, ab_index|#
-												description << "At Bat #{ab_index + 1}: #{ab.des}\n"#
-											}#
-										else
-											description = atbat.des
-										end
-										f.puts "<td style=\"position: relative; top: 0; left: 0\" title=\"#{description}\">"
-											f.puts "<img src=\"#{File.join(@imagedir, 'bases_bg.png')}\" style=\"position: absolute; top: 0; left: 0\"></img>"
-											f.puts "<img src= #{@elements[1]} style=\"position: absolute; top: 0; left: 0\"></img>" if @elements[1]
-											f.puts "<img src= #{@elements[0]} style=\"position: absolute; top: 0; left: 0\"></img>"
-											f.puts "<img src= #{@elements[2]} style=\"position: absolute; top: 69; left: 69\"></img>" if @elements[2]
-											f.puts "<pre style=\"position: absolute; top: -7; left: 7; font-family: arial; font-size: small\">"
-												f.puts "#{atbat.b}-#{atbat.s}"
-											f.puts "</pre>"
-											if @fldg
-												f.puts "<pre style=\"position: absolute; top: 60; left: 7; font-family: arial; font-size: small\">"
-													f.puts @fldg
-												f.puts "</pre>"
-											end
-											if @elements[4]
-												f.puts "<pre style=\"position: absolute; top: -7; left: 65; font-family: arial; font-size: small\">"
-													f.puts @elements[4]
-												f.puts "</pre>"
-												f.puts "<pre style=\"position: absolute; top: -1; left: 72; font-family: arial; font-size: x-small\">"
-													f.puts "RBI"
-												f.puts "</pre>"
-											end
-											if batter.innings[inning_index].length > 1
-												f.puts "<pre style=\"position: absolute; top: 6; left: 32; font-family: arial; font-weight: bold\">"
-													f.puts "+AB"
-												f.puts "</pre>"
-											end
-											if atbat.des.include?('steals')
-												f.puts "<pre style=\"position: absolute; top: 6; left: 37; font-family: arial; font-weight: bold\">"
-													f.puts "SB"
-												f.puts "</pre>"
-											end
-											
-										f.puts "</td>"
-									end		#if inning.empty?
-								}		#batter.innings.each_with_index
+								inning_num += 1
+							}
 							f.puts "</tr>"
-						end		#unless
-					}		#batters.each_with_index
-					
+							
+						batters.each_with_index{|batter, batter_index|
+							unless batter.batting_order == 0
+								f.puts "<tr>"
+									
+									f.puts "<td title=\"#{batter.stats}\">"
+											f.puts "<pre style=\"font-family: Arial; color: white; padding-right: 7px; font-weight: bold; text-align: right;\"><big>#{batter.batting_order}\n#{batter.name}\n##{batter.number} #{batter.position}</big></pre>"
+									f.puts "</td>"
+									
+									batter.innings.each_with_index{|inning, inning_index|
+										if inning.empty?
+											f.puts "<td style=\"width: 96px; height: 96px;\">"
+											f.puts "<img src=\"#{File.join(@image_dir, 'bases_no_ba.png')}\" style=\"position: relative; top: 0; left: 0\"></img>"##
+											f.puts "</td>"
+										else
+											atbat = batter.innings[inning_index][-1]
+											get_elements(home_or_away, batter_index, inning_index)
+											description = ""
+											if batter.innings[inning_index].length > 1
+												batter.innings[inning_index].each_with_index{|ab, ab_index|
+													description << "At Bat #{ab_index + 1}: #{ab.des}\n"
+												}
+											else
+												description = atbat.des
+											end
+											f.puts "<td style=\"width: 96px; height: 96px;\" title=\"#{description}\">"
+												f.puts "<div style=\"position: relative; width: 96px; height: 96px; background-transparent;\">"
+													bases_bg = File.join(@image_dir, 'bases_bg.png')
+													f.puts "<img src=\"#{bases_bg}\" width=\"96px\" height=\"96px\" style=\"position: absolute; top: 0; left: 0\">"
+													f.puts "<img src=\"#{@elements[2]}\" width=\"96px\" height=\"96px\" style=\"position: absolute; top: 0; left: 0\">" if @elements[2]
+													f.puts "<img src=\"#{@elements[0]}\" width=\"96px\" height=\"96px\" style=\"position: absolute; top: 0; left: 0\">"
+													
+													f.puts "<p style=\"font-family: Arial; text-align: center; position: absolute; top: 21px; width: 96px; font-weight: bold;\"><big>#{@elements[1]}</big></p>"
+													f.puts "<p style=\"font-family: Arial; position: absolute; top: -12px; text-align: left; padding-left: 7px;\"><small>#{atbat.b}-#{atbat.s}</small></p>"
+													f.puts "<p style=\"font-family: Arial; position: absolute; top: 56px; text-align: left; padding-left: 7px;\"><small>#{@fldg}</small></p>" if @fldg
+													f.puts "<p style=\"font-family: Arial; position: absolute; top: -12px; width: 89px; text-align: right;\"><small>#{@elements[4]}<small>RBI</small></small></p>" if @elements[4]
+													f.puts "<p style=\"font-family: Arial; position: absolute; top: 53px; width: 85px; text-align: right; color: rgb(153, 0, 0); font-weight: bold;\">#{@elements[3]}</p>" if @elements[3]
+													f.puts "<p style=\"font-family: Arial; text-align: center; position: absolute; top: 37px; width: 93px; color: rgb(0, 153, 0);\">+AB</p>" if batter.innings[inning_index].length > 1
+													f.puts "<p style=\"font-family: Arial; text-align: center; position: absolute; top: 7px; width: 96px; color: rgb(0, 153, 0);\">SB</p>" 	if atbat.des.include?('steals')
+												f.puts "</div>"	#ab_cell
+											f.puts "</td>"
+										end		#if inning.empty?
+									}		#batter.innings.each_with_index
+								f.puts "</tr>"
+							end		#unless
+						}		#batters.each_with_index
+					f.puts "</tbody>"
 				f.puts "</table>"
 				
 				f.puts "<hr style=\"padding-top: 10\"></hr>"
 				f.puts "<h2 style=\"color: white; font-family: arial; text-align: center\">Pitching</h2>"
-				
-				f.puts "<table>"
-				
-					f.puts "<tr>"
-						f.puts "<td></td>"
-						%w[W-L ERA IP AB K BB H R ER].each{|entry|
-							f.puts "<td style=\"width: 150; color: white; font-family: arial; font-size: 125%; text-align: center\">"
-								f.puts entry
-							f.puts "</td>"
-						}
-					f.puts "</tr>"
 					
-					pitchers.each{|pitcher|
-						f.puts "<tr style=\"color: white; font-family: arial\">"
-							f.puts "<td style=\"font-size: 125%; text-align: right; padding-right: 20\">"
-								f.puts pitcher.pitcher_name
-							f.puts "</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.w}-#{pitcher.l}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.era}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.inn}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.bf}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.so}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.bb}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.h}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.r}</td>"
-							f.puts "<td style=\"width: 150; text-align: center\">#{pitcher.er}</td>"
+					f.puts "<table>"
+					
+						f.puts "<tr>"
+							f.puts "<td></td>"
+							%w[W-L ERA IP AB K BB H R ER].each{|entry|
+								f.puts "<td style=\"width: 150; color: white; font-family: arial; font-size: 125%; text-align: center\">"
+									f.puts entry
+								f.puts "</td>"
+							}
 						f.puts "</tr>"
-					}
-				f.puts "</table>"
+						
+						pitchers.each{|pitcher|
+							f.puts "<tr style=\"color: white; font-family: arial\">"
+								f.puts "<td style=\"font-size: 125%; text-align: right; padding-right: 20\">"
+									f.puts pitcher.pitcher_name
+								f.puts "</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.w}-#{pitcher.l}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.era}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.inn}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.bf}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.so}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.bb}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.h}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.r}</td>"
+								f.puts "<td style=\"width: 150px; text-align: center\">#{pitcher.er}</td>"
+							f.puts "</tr>"
+						}
+					f.puts "</table>"
 				
-			f.puts "</body>"
-		f.puts "</html>"
+				f.puts "</body>"
+			f.puts "</html>"
 		
-	}	#close file
+		}	#close file
 	
-	@status_line.text = "html built"
-	p "html built"##
-	Launchy.open("./scorecard_#{home_or_away}.html")
-end		#init_html()
+		@status_line.text = "html built"
+		p "html built"##
+		Launchy.open("./scorecard_#{home_or_away}.html")
+	end		#init_html()
 	
 end		#module CardGenerator
