@@ -8,7 +8,7 @@ end
 module CardGenerator
 	
 	def init_cards(game)
-		@image_dir = File.join(File.expand_path(File.dirname(__FILE__)), "images")
+		@image_dir = "file://#{File.join(File.expand_path(File.dirname(__FILE__)), "images")}"
 		Thread.new{init_batting_arrays(game)}
 	end
 	
@@ -263,7 +263,7 @@ module CardGenerator
 				f.puts "</head>"
 				
 				bg_img = File.join(@image_dir, 'grass.jpg')
-				f.puts "<body style=\"background-image: url('file://#{bg_img}')\">"
+				f.puts "<body style=\"background-image: url('#{bg_img}')\">"
 					f.puts "<h1 style=\"text-align: center; color: white; font-family: Arial\">"
 						f.puts "<big>#{@visiting_team} #{@visiting_score} - #{@home_team} #{@home_score}</big>"
 					f.puts "</h1>"
